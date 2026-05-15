@@ -460,7 +460,7 @@
 
         let currentRank = '', activeDeck = [], currentIndex = 0, isFlipped = false, scoreCorrect = 0, scoreFailed = 0, isActive = false, scoreHistory = [], isRevealed = false;
         let vocabAudio = null;
-        let completedRanks = JSON.parse(localStorage.getItem('sw_cinematic_icons_v1')) || [];
+        let completedRanks = JSON.parse(localStorage.getItem('sw_cinematic_icons_v2')) || [];
 
         const introVideo = document.getElementById('intro-video');
 
@@ -472,7 +472,6 @@
                 const btn = document.createElement('button'); btn.className = `rank-btn ${rank.color}`;
                 if(isDone) btn.style.opacity = "0.4";
                 
-                // Using the new FontAwesome Icons instead of character names
                 btn.innerHTML = `<span class="btn-theme">${rank.theme}</span><span class="btn-icon">${rank.icon}</span>`;
                 
                 btn.onclick = () => startTraining(rank);
@@ -486,6 +485,7 @@
             document.getElementById('landing-screen').style.display = 'none';
             document.getElementById('video-screen').style.display = 'block';
             
+            introVideo.volume = 0.3; // Lowers Imperial March to 30%
             introVideo.muted = false;
             document.getElementById('mute-btn').innerText = "MUTE AUDIO";
             document.getElementById('mute-btn').style.borderColor = "#ff0000";
@@ -613,7 +613,7 @@
             isActive = false; hideAll();
             if (currentIndex >= activeDeck.length && !completedRanks.includes(currentRank.id)) {
                 completedRanks.push(currentRank.id);
-                localStorage.setItem('sw_cinematic_icons_v1', JSON.stringify(completedRanks));
+                localStorage.setItem('sw_cinematic_icons_v2', JSON.stringify(completedRanks));
             }
             let total = scoreCorrect + scoreFailed;
             document.getElementById('results-screen').style.display = 'flex';
