@@ -117,7 +117,7 @@
         .state-word { font-size: 7vw; color: #39ff14; text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 20px rgba(57, 255, 20, 0.5); } 
 
         .controls-hint {
-            position: absolute; bottom: 30px; width: 100%; color: #333; font-family: monospace; font-size: 16px;
+            position: absolute; bottom: 30px; width: 100%; color: #555; font-family: monospace; font-size: 16px;
         }
     </style>
 </head>
@@ -133,12 +133,12 @@
         <div id="score-hud" class="hud">Correct: <span id="hud-correct" class="score-correct">0</span><br>Failed: <span id="hud-failed" class="score-failed">0</span></div>
         
         <div id="sentence-container">
-            <div id="def-text" class="state-def"></div>
+            <div id="def-text" class="state-def" style="visibility: hidden;"></div>
             <div id="word-text" class="state-word" style="visibility: hidden;"></div>
         </div>
 
         <div class="controls-hint">
-            [SPACE] Listen & Read | [UP] Show Answer | [RIGHT] Correct | [LEFT] Failed | [DOWN] Undo | [ESC] Exit
+            [ENTER] Listen | [SPACE] Listen & Read | [UP] Show Answer | [RIGHT] Correct | [LEFT] Failed | [DOWN] Undo
         </div>
     </div>
 
@@ -306,9 +306,9 @@
             ]
         };
 
-        let currentRank = '', activeDeck = [], currentIndex = 0, isFlipped = false, scoreCorrect = 0, scoreFailed = 0, isActive = false, scoreHistory = [], isRevealed = false;
+        let currentRank = '', activeDeck = [], currentIndex = 0, isFlipped = false, scoreCorrect = 0, scoreFailed = 0, isActive = false, scoreHistory = [];
         let currentAudio = null;
-        let completedRanks = JSON.parse(localStorage.getItem('sw_audio_cloud_v1')) || [];
+        let completedRanks = JSON.parse(localStorage.getItem('sw_handshake_final')) || [];
 
         function initMenu() {
             const grid = document.getElementById('rank-grid'); grid.innerHTML = '';
@@ -344,7 +344,10 @@
             hideAll(); document.getElementById('flashcard-area').style.display = 'block';
             document.getElementById('hud-set').innerText = rankObj.theme;
             document.getElementById('hud-total').innerText = activeDeck.length;
-            updateHUD(); displayCard();
+            
+            updateHUD(); 
+            displayCard();
+            // Start silent. Waiting for 'Enter'
         }
 
         function updateHUD() {
@@ -357,38 +360,34 @@
             stopAudio();
             const defEl = document.getElementById('def-text');
             defEl.innerText = activeDeck[currentIndex].def;
-            defEl.style.color = "#111"; // Hidden
+            defEl.style.visibility = "hidden"; // Entirely invisible to start
+
             document.getElementById('word-text').innerText = activeDeck[currentIndex].word;
             document.getElementById('word-text').style.visibility = 'hidden';
-            isFlipped = false; isRevealed = false;
+            
+            isFlipped = false;
         }
 
         function revealText() {
-            document.getElementById('def-text').style.color = "#ff8c00"; // Reveal Orange
-            isRevealed = true;
+            document.getElementById('def-text').style.visibility = "visible";
         }
 
-        function triggerAudioAndText() {
+        function playAudioOnly() {
             stopAudio();
-            revealText();
-            
             const item = activeDeck[currentIndex];
             const safeWord = item.word.replace(/ /g, '_'); 
             const categoryFolder = currentRank.id;
             
-            // Raw GitHub URL mapped directly to your repository structure
             const repoBaseUrl = 'https://raw.githubusercontent.com/dogierez/esential-vocabulary-star-wars-with-audio/main/audio';
             const audioUrl = `${repoBaseUrl}/${categoryFolder}/${item.id}_Q_${safeWord}.wav`;
             
             currentAudio = new Audio(audioUrl);
-            currentAudio.play().catch(e => {
-                console.log(`Audio not found or blocked: ${audioUrl}`, e);
-            });
+            currentAudio.play().catch(e => console.log(e));
         }
 
         function flipCard() { 
             if (!isFlipped) { 
-                revealText();
+                revealText(); // Safety check: show def if they skipped Space
                 document.getElementById('word-text').style.visibility = 'visible'; 
                 isFlipped = true; 
             } 
@@ -396,15 +395,20 @@
 
         function nextCard() {
             currentIndex++;
-            if (currentIndex >= activeDeck.length) endExercise(`The Archives are complete.`);
-            else { updateHUD(); displayCard(); }
+            if (currentIndex >= activeDeck.length) {
+                endExercise(`The Archives are complete.`);
+            } else { 
+                updateHUD(); 
+                displayCard(); 
+                // Card is loaded. Silent. Waiting for Enter.
+            }
         }
 
         function endExercise(msg) {
             isActive = false; hideAll();
             if (currentIndex >= activeDeck.length && !completedRanks.includes(currentRank.id)) {
                 completedRanks.push(currentRank.id);
-                localStorage.setItem('sw_audio_cloud_v1', JSON.stringify(completedRanks));
+                localStorage.setItem('sw_handshake_final', JSON.stringify(completedRanks));
             }
             let total = scoreCorrect + scoreFailed;
             document.getElementById('results-screen').style.display = 'flex';
@@ -416,9 +420,17 @@
 
         document.addEventListener('keydown', (e) => {
             if (!isActive) return;
-            if (e.code === 'Space') { 
+            
+            if (e.code === 'Enter') { 
                 e.preventDefault(); 
-                triggerAudioAndText(); 
+                // Just play the audio. Leave text hidden.
+                playAudioOnly(); 
+            }
+            else if (e.code === 'Space') { 
+                e.preventDefault(); 
+                // Play audio AND reveal the text
+                playAudioOnly();
+                revealText(); 
             }
             else if (e.key === 'ArrowUp') flipCard();
             else if (e.key === 'ArrowRight' && isFlipped) { scoreHistory.push('correct'); scoreCorrect++; nextCard(); }
@@ -426,7 +438,8 @@
             else if (e.key === 'ArrowDown' && currentIndex > 0) {
                 currentIndex--; const last = scoreHistory.pop();
                 if (last === 'correct') scoreCorrect--; if (last === 'failed') scoreFailed--;
-                updateHUD(); displayCard(); revealText(); 
+                updateHUD(); displayCard(); 
+                revealText(); // Reveal what was there
                 document.getElementById('word-text').style.visibility = 'visible'; isFlipped = true;
             } else if (e.key === 'Escape') endExercise("Session Aborted");
         });
