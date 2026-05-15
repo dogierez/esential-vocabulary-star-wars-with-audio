@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galactic Vocabulary Archives - Cinematic Edition</title>
+    <title>Galactic Vocabulary Archives - Mobile Ready</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');
 
         body {
             background-color: #050505;
-            /* Starry-like deep space gradient */
             background-image: radial-gradient(circle at center, #1a1a24 0%, #000000 100%);
             color: #fff;
             font-family: Arial, Helvetica, sans-serif;
@@ -20,8 +19,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh; /* Changed from height: 100vh to allow mobile scrolling */
+            overflow-x: hidden;
+            overflow-y: auto; /* Allows scrolling on smaller screens */
             text-align: center;
         }
 
@@ -33,6 +33,7 @@
             width: 100%;
             max-width: 1300px;
             padding: 20px;
+            box-sizing: border-box;
         }
 
         .main-title {
@@ -45,16 +46,16 @@
             text-transform: uppercase;
         }
 
-        /* --- EPIC ENTER BUTTON (From Your Inspiration) --- */
+        /* EPIC ENTER BUTTON */
         #epic-enter-btn {
             background: transparent;
             border: none;
             font-family: 'Orbitron', sans-serif;
-            font-size: 140px; /* Massive size */
+            font-size: 140px; 
             font-weight: 900;
-            color: #000; /* Black inner fill */
-            -webkit-text-stroke: 4px #ff0000; /* Sharp red border */
-            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0000; /* Heavy neon glow */
+            color: #000; 
+            -webkit-text-stroke: 4px #ff0000; 
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0000; 
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 15px;
@@ -181,29 +182,73 @@
         .btn-skip:hover { background: #00f3ff; color: #fff; }
 
         /* Flashcard Area */
-        #flashcard-area { display: none; width: 100%; height: 100%; position: relative; }
+        #flashcard-area { display: none; width: 100%; height: 100vh; position: relative; }
         .hud { position: absolute; top: 20px; font-size: 22px; font-family: monospace; color: #444; }
-        #progress-hud { left: 40px; text-align: left; }
-        #score-hud { right: 40px; text-align: right; }
+        #progress-hud { left: 20px; text-align: left; }
+        #score-hud { right: 20px; text-align: right; }
         .score-correct { color: #39ff14; }
         .score-failed { color: #ff0000; }
 
         #sentence-container {
             position: absolute;
-            top: 48%;
+            top: 45%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 85%;
+            width: 90%;
             display: flex;
             flex-direction: column;
-            gap: 60px;
+            gap: 40px;
         }
 
         .state-def { font-size: 3.8vw; color: #ff8c00; line-height: 1.3; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); } 
         .state-word { font-size: 7vw; color: #39ff14; text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 20px rgba(57, 255, 20, 0.5); } 
 
-        .controls-hint {
-            position: absolute; bottom: 30px; width: 100%; color: #555; font-family: monospace; font-size: 16px;
+        /* ON-SCREEN TOUCH CONTROLS */
+        .touch-controls {
+            position: absolute; 
+            bottom: 20px; 
+            width: 100%; 
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .touch-btn {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #555;
+            color: #fff;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .touch-btn:active { transform: scale(0.95); }
+
+        /* --- MOBILE RESPONSIVE FIXES --- */
+        @media (max-width: 800px) {
+            .main-title { font-size: 32px; }
+            #epic-enter-btn { 
+                font-size: 60px; 
+                -webkit-text-stroke: 2px #ff0000; 
+                letter-spacing: 5px; 
+            }
+            #rank-grid { grid-template-columns: repeat(2, 1fr); }
+            .rank-btn { height: 120px; }
+            .btn-theme { font-size: 18px; }
+            .hud { font-size: 16px; top: 10px; }
+            .state-def { font-size: 6vw; }
+            .state-word { font-size: 10vw; }
+            
+            .video-overlay-btn { font-size: 12px; padding: 10px 15px; bottom: 20px; }
+            .btn-mute { left: 10px; }
+            .btn-skip { right: 10px; }
+
+            .touch-btn { padding: 10px 12px; font-size: 12px; }
         }
     </style>
 </head>
@@ -233,12 +278,18 @@
             <div id="word-text" class="state-word" style="visibility: hidden;"></div>
         </div>
 
-        <div class="controls-hint">
-            [ENTER] Listen | [SPACE] Listen & Read | [UP] Show Answer | [RIGHT] Correct | [LEFT] Failed | [DOWN] Undo | [ESC] Exit
+        <div class="touch-controls">
+            <button class="touch-btn" onclick="handleAction('listen')">🔊 Listen</button>
+            <button class="touch-btn" onclick="handleAction('read')">📖 Read</button>
+            <button class="touch-btn" onclick="handleAction('reveal')">👁️ Reveal</button>
+            <button class="touch-btn" style="border-color: #ff0000; color: #ff0000;" onclick="handleAction('fail')">❌ Fail</button>
+            <button class="touch-btn" style="border-color: #39ff14; color: #39ff14;" onclick="handleAction('pass')">✅ Correct</button>
+            <button class="touch-btn" onclick="handleAction('undo')">↩️ Undo</button>
+            <button class="touch-btn" style="border-color: #ffe81f; color: #ffe81f;" onclick="handleAction('exit')">Exit</button>
         </div>
     </div>
 
-    <div id="results-screen" class="menu-container" style="display: none; height: 100vh; justify-content: center;">
+    <div id="results-screen" class="menu-container" style="display: none; justify-content: center;">
         <h1 style="font-size: 60px; color: #ffe81f; margin-bottom: 10px;">MISSION COMPLETE</h1>
         <div style="font-size: 72px; margin-bottom: 20px;">Score: <span id="res-percentage">0</span>%</div>
         <div style="font-size: 38px; margin-bottom: 40px;"><span class="score-correct">Correct: <span id="res-correct">0</span></span> | <span class="score-failed">Failed: <span id="res-failed">0</span></span></div>
@@ -404,7 +455,7 @@
 
         let currentRank = '', activeDeck = [], currentIndex = 0, isFlipped = false, scoreCorrect = 0, scoreFailed = 0, isActive = false, scoreHistory = [], isRevealed = false;
         let vocabAudio = null;
-        let completedRanks = JSON.parse(localStorage.getItem('sw_cinematic_v2')) || [];
+        let completedRanks = JSON.parse(localStorage.getItem('sw_cinematic_v3')) || [];
 
         const introVideo = document.getElementById('intro-video');
 
@@ -554,7 +605,7 @@
             isActive = false; hideAll();
             if (currentIndex >= activeDeck.length && !completedRanks.includes(currentRank.id)) {
                 completedRanks.push(currentRank.id);
-                localStorage.setItem('sw_cinematic_v2', JSON.stringify(completedRanks));
+                localStorage.setItem('sw_cinematic_v3', JSON.stringify(completedRanks));
             }
             let total = scoreCorrect + scoreFailed;
             document.getElementById('results-screen').style.display = 'flex';
@@ -564,28 +615,49 @@
             document.getElementById('res-failed').innerText = scoreFailed;
         }
 
-        document.addEventListener('keydown', (e) => {
+        // --- NEW CENTRALIZED ACTION HANDLER (For Touch & Keyboard) ---
+        function handleAction(actionType) {
             if (!isActive) return;
-            
-            if (e.code === 'Enter') { 
-                e.preventDefault(); 
+
+            if (actionType === 'listen') { 
                 playAudioOnly(); 
             }
-            else if (e.code === 'Space') { 
-                e.preventDefault(); 
+            else if (actionType === 'read') { 
                 playAudioOnly();
                 revealText(); 
             }
-            else if (e.key === 'ArrowUp') flipCard();
-            else if (e.key === 'ArrowRight' && isFlipped) { scoreHistory.push('correct'); scoreCorrect++; nextCard(); }
-            else if (e.key === 'ArrowLeft' && isFlipped) { scoreHistory.push('failed'); scoreFailed++; nextCard(); }
-            else if (e.key === 'ArrowDown' && currentIndex > 0) {
+            else if (actionType === 'reveal') { 
+                flipCard(); 
+            }
+            else if (actionType === 'pass' && isFlipped) { 
+                scoreHistory.push('correct'); scoreCorrect++; nextCard(); 
+            }
+            else if (actionType === 'fail' && isFlipped) { 
+                scoreHistory.push('failed'); scoreFailed++; nextCard(); 
+            }
+            else if (actionType === 'undo' && currentIndex > 0) {
                 currentIndex--; const last = scoreHistory.pop();
                 if (last === 'correct') scoreCorrect--; if (last === 'failed') scoreFailed--;
                 updateHUD(); displayCard(); 
                 revealText(); 
                 document.getElementById('word-text').style.visibility = 'visible'; isFlipped = true;
-            } else if (e.key === 'Escape') endExercise("Session Aborted");
+            }
+            else if (actionType === 'exit') {
+                endExercise("Session Aborted");
+            }
+        }
+
+        // GLOBAL KEYBOARD LOGIC (Mapping keys to the central handler)
+        document.addEventListener('keydown', (e) => {
+            if (!isActive) return;
+            
+            if (e.code === 'Enter') { e.preventDefault(); handleAction('listen'); }
+            else if (e.code === 'Space') { e.preventDefault(); handleAction('read'); }
+            else if (e.key === 'ArrowUp') handleAction('reveal');
+            else if (e.key === 'ArrowRight') handleAction('pass');
+            else if (e.key === 'ArrowLeft') handleAction('fail');
+            else if (e.key === 'ArrowDown') handleAction('undo');
+            else if (e.key === 'Escape') handleAction('exit');
         });
 
     </script>
