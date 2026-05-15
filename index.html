@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galactic Vocabulary Archives - Mobile Ready</title>
+    <title>Galactic Vocabulary Archives - Cinematic Edition</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');
 
@@ -19,9 +22,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh; /* Changed from height: 100vh to allow mobile scrolling */
+            min-height: 100vh; 
             overflow-x: hidden;
-            overflow-y: auto; /* Allows scrolling on smaller screens */
+            overflow-y: auto; 
             text-align: center;
         }
 
@@ -114,7 +117,7 @@
 
         .rank-btn:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.05); }
         .btn-theme { font-size: 28px; font-weight: 900; display: block; margin-bottom: 5px; }
-        .btn-character { font-size: 13px; font-weight: bold; opacity: 0.8; letter-spacing: 1px; }
+        .btn-icon { font-size: 32px; margin-top: 5px; opacity: 0.9; }
 
         .progress-text { color: #666; font-size: 13px; font-family: monospace; }
         
@@ -240,6 +243,7 @@
             #rank-grid { grid-template-columns: repeat(2, 1fr); }
             .rank-btn { height: 120px; }
             .btn-theme { font-size: 18px; }
+            .btn-icon { font-size: 24px; }
             .hud { font-size: 16px; top: 10px; }
             .state-def { font-size: 6vw; }
             .state-word { font-size: 10vw; }
@@ -297,17 +301,18 @@
     </div>
 
     <script>
+        // Ranks updated with FontAwesome icons instead of text names
         const ranks = [
-            { id: "crime", theme: "Crime", char: "Youngling", color: "color-1" },
-            { id: "finance", theme: "Finance", char: "Padawan", color: "color-2" },
-            { id: "building", theme: "Building", char: "Stormtrooper", color: "color-3" },
-            { id: "gastronomy", theme: "Gastronomy", char: "Moon Trooper", color: "color-4" },
-            { id: "medical", theme: "Medical", char: "Jedi Knight", color: "color-5" },
-            { id: "education", theme: "Education", char: "Sith Lord", color: "color-6" },
-            { id: "legal", theme: "Legal", char: "Jedi Master", color: "color-7" },
-            { id: "travel", theme: "Travel", char: "Darth Vader", color: "color-8" },
-            { id: "religion", theme: "Religion", char: "Obi-Wan Kenobi", color: "color-9" },
-            { id: "nature", theme: "Nature", char: "Grandmaster Yoda", color: "color-10" }
+            { id: "crime", theme: "Crime", icon: '<i class="fa-solid fa-child-reaching"></i>', color: "color-1" },
+            { id: "finance", theme: "Finance", icon: '<i class="fa-solid fa-user-graduate"></i>', color: "color-2" },
+            { id: "building", theme: "Building", icon: '<i class="fa-brands fa-empire"></i>', color: "color-3" },
+            { id: "gastronomy", theme: "Gastronomy", icon: '<i class="fa-solid fa-moon"></i>', color: "color-4" },
+            { id: "medical", theme: "Medical", icon: '<i class="fa-brands fa-galactic-republic"></i>', color: "color-5" },
+            { id: "education", theme: "Education", icon: '<i class="fa-brands fa-sith"></i>', color: "color-6" },
+            { id: "legal", theme: "Legal", icon: '<i class="fa-solid fa-jedi"></i>', color: "color-7" },
+            { id: "travel", theme: "Travel", icon: '<i class="fa-solid fa-user-ninja"></i>', color: "color-8" },
+            { id: "religion", theme: "Religion", icon: '<i class="fa-solid fa-user-shield"></i>', color: "color-9" },
+            { id: "nature", theme: "Nature", icon: '<i class="fa-solid fa-meteor"></i>', color: "color-10" }
         ];
 
         const vocabularyData = {
@@ -455,7 +460,7 @@
 
         let currentRank = '', activeDeck = [], currentIndex = 0, isFlipped = false, scoreCorrect = 0, scoreFailed = 0, isActive = false, scoreHistory = [], isRevealed = false;
         let vocabAudio = null;
-        let completedRanks = JSON.parse(localStorage.getItem('sw_cinematic_v3')) || [];
+        let completedRanks = JSON.parse(localStorage.getItem('sw_cinematic_icons_v1')) || [];
 
         const introVideo = document.getElementById('intro-video');
 
@@ -466,7 +471,10 @@
                 const container = document.createElement('div'); container.className = 'rank-container';
                 const btn = document.createElement('button'); btn.className = `rank-btn ${rank.color}`;
                 if(isDone) btn.style.opacity = "0.4";
-                btn.innerHTML = `<span class="btn-theme">${rank.theme}</span><span class="btn-character">${rank.char}</span>`;
+                
+                // Using the new FontAwesome Icons instead of character names
+                btn.innerHTML = `<span class="btn-theme">${rank.theme}</span><span class="btn-icon">${rank.icon}</span>`;
+                
                 btn.onclick = () => startTraining(rank);
                 const prog = document.createElement('div'); prog.className = 'progress-text'; prog.innerText = isDone ? `CLEARED` : `${total} Entries`;
                 container.appendChild(btn); container.appendChild(prog); grid.appendChild(container);
@@ -605,7 +613,7 @@
             isActive = false; hideAll();
             if (currentIndex >= activeDeck.length && !completedRanks.includes(currentRank.id)) {
                 completedRanks.push(currentRank.id);
-                localStorage.setItem('sw_cinematic_v3', JSON.stringify(completedRanks));
+                localStorage.setItem('sw_cinematic_icons_v1', JSON.stringify(completedRanks));
             }
             let total = scoreCorrect + scoreFailed;
             document.getElementById('results-screen').style.display = 'flex';
@@ -615,7 +623,6 @@
             document.getElementById('res-failed').innerText = scoreFailed;
         }
 
-        // --- NEW CENTRALIZED ACTION HANDLER (For Touch & Keyboard) ---
         function handleAction(actionType) {
             if (!isActive) return;
 
@@ -647,7 +654,6 @@
             }
         }
 
-        // GLOBAL KEYBOARD LOGIC (Mapping keys to the central handler)
         document.addEventListener('keydown', (e) => {
             if (!isActive) return;
             
