@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galactic Vocabulary Archives - Cloud Audio</title>
+    <title>Galactic Vocabulary Archives - Cinematic Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');
 
         body {
             background-color: #050505;
-            background-image: radial-gradient(circle at center, #151515 0%, #000000 100%);
+            /* Starry-like deep space gradient */
+            background-image: radial-gradient(circle at center, #1a1a24 0%, #000000 100%);
             color: #fff;
             font-family: Arial, Helvetica, sans-serif;
             font-weight: bold;
@@ -43,7 +44,30 @@
             margin-bottom: 10px;
             text-transform: uppercase;
         }
+
+        /* --- EPIC ENTER BUTTON (From Your Inspiration) --- */
+        #epic-enter-btn {
+            background: transparent;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 140px; /* Massive size */
+            font-weight: 900;
+            color: #000; /* Black inner fill */
+            -webkit-text-stroke: 4px #ff0000; /* Sharp red border */
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0000; /* Heavy neon glow */
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 15px;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        #epic-enter-btn:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 30px #ff0000, 0 0 50px #ff0000, 0 0 80px #ff0000;
+        }
         
+        /* Rank Colors */
         .color-1 { color: #ffa500; border-color: #ffa500; text-shadow: 0 0 8px #ffa500; }
         .color-2 { color: #00bfff; border-color: #00bfff; text-shadow: 0 0 8px #00bfff; }
         .color-3 { color: #ffffff; border-color: #ffffff; text-shadow: 0 0 8px #ffffff; }
@@ -92,15 +116,77 @@
         .btn-character { font-size: 13px; font-weight: bold; opacity: 0.8; letter-spacing: 1px; }
 
         .progress-text { color: #666; font-size: 13px; font-family: monospace; }
-        .back-btn { background: transparent; border: 2px solid #555; color: #888; padding: 12px 35px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase; border-radius: 5px; }
-        .back-btn:hover { background: #444; color: #fff; }
+        
+        .nav-btn { 
+            background: transparent; 
+            border: 2px solid #555; 
+            color: #888; 
+            padding: 12px 35px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            text-transform: uppercase; 
+            border-radius: 5px; 
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+        }
+        .nav-btn:hover { background: #444; color: #fff; }
 
+        /* Video Screen Styles */
+        #video-screen {
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background-color: #000;
+        }
+
+        #intro-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .video-overlay-btn {
+            position: absolute;
+            bottom: 40px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 8px;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .btn-mute {
+            left: 40px;
+            color: #ff0000;
+            border-color: #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+        }
+        .btn-mute:hover { background: #ff0000; color: #fff; }
+
+        .btn-skip {
+            right: 40px;
+            color: #00f3ff;
+            border-color: #00f3ff;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+        }
+        .btn-skip:hover { background: #00f3ff; color: #fff; }
+
+        /* Flashcard Area */
         #flashcard-area { display: none; width: 100%; height: 100%; position: relative; }
         .hud { position: absolute; top: 20px; font-size: 22px; font-family: monospace; color: #444; }
         #progress-hud { left: 40px; text-align: left; }
         #score-hud { right: 40px; text-align: right; }
         .score-correct { color: #39ff14; }
-        .score-failed { color: #ff003c; }
+        .score-failed { color: #ff0000; }
 
         #sentence-container {
             position: absolute;
@@ -123,7 +209,17 @@
 </head>
 <body>
 
-    <div id="main-menu" class="menu-container">
+    <div id="landing-screen" class="menu-container">
+        <button id="epic-enter-btn" onclick="startVideoIntro()">ENTER</button>
+    </div>
+
+    <div id="video-screen">
+        <video id="intro-video" src="https://raw.githubusercontent.com/dogierez/esential-vocabulary-star-wars-with-audio/main/intro.mp4" playsinline></video>
+        <button id="mute-btn" class="video-overlay-btn btn-mute" onclick="toggleMute()">MUTE AUDIO</button>
+        <button class="video-overlay-btn btn-skip" onclick="skipToMenu()">SKIP TO ARCHIVES &raquo;</button>
+    </div>
+
+    <div id="main-menu" class="menu-container" style="display: none;">
         <h1 class="main-title">Archives</h1>
         <div id="rank-grid"></div>
     </div>
@@ -138,7 +234,7 @@
         </div>
 
         <div class="controls-hint">
-            [ENTER] Listen | [SPACE] Listen & Read | [UP] Show Answer | [RIGHT] Correct | [LEFT] Failed | [DOWN] Undo
+            [ENTER] Listen | [SPACE] Listen & Read | [UP] Show Answer | [RIGHT] Correct | [LEFT] Failed | [DOWN] Undo | [ESC] Exit
         </div>
     </div>
 
@@ -146,7 +242,7 @@
         <h1 style="font-size: 60px; color: #ffe81f; margin-bottom: 10px;">MISSION COMPLETE</h1>
         <div style="font-size: 72px; margin-bottom: 20px;">Score: <span id="res-percentage">0</span>%</div>
         <div style="font-size: 38px; margin-bottom: 40px;"><span class="score-correct">Correct: <span id="res-correct">0</span></span> | <span class="score-failed">Failed: <span id="res-failed">0</span></span></div>
-        <button class="back-btn" onclick="showMainMenu()">Return to Command Center</button>
+        <button class="nav-btn" onclick="showMainMenu()">Return to Command Center</button>
     </div>
 
     <script>
@@ -306,9 +402,11 @@
             ]
         };
 
-        let currentRank = '', activeDeck = [], currentIndex = 0, isFlipped = false, scoreCorrect = 0, scoreFailed = 0, isActive = false, scoreHistory = [];
-        let currentAudio = null;
-        let completedRanks = JSON.parse(localStorage.getItem('sw_handshake_final')) || [];
+        let currentRank = '', activeDeck = [], currentIndex = 0, isFlipped = false, scoreCorrect = 0, scoreFailed = 0, isActive = false, scoreHistory = [], isRevealed = false;
+        let vocabAudio = null;
+        let completedRanks = JSON.parse(localStorage.getItem('sw_cinematic_v2')) || [];
+
+        const introVideo = document.getElementById('intro-video');
 
         function initMenu() {
             const grid = document.getElementById('rank-grid'); grid.innerHTML = '';
@@ -324,19 +422,69 @@
             });
         }
 
-        function stopAudio() {
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
+        // --- VIDEO CONTROLS ---
+        function startVideoIntro() {
+            document.getElementById('landing-screen').style.display = 'none';
+            document.getElementById('video-screen').style.display = 'block';
+            
+            introVideo.muted = false;
+            document.getElementById('mute-btn').innerText = "MUTE AUDIO";
+            document.getElementById('mute-btn').style.borderColor = "#ff0000";
+            document.getElementById('mute-btn').style.color = "#ff0000";
+
+            introVideo.play().catch(e => {
+                console.log("Video Autoplay blocked. Attempting muted autoplay fallback.", e);
+                introVideo.muted = true;
+                document.getElementById('mute-btn').innerText = "UNMUTE AUDIO";
+                introVideo.play();
+            });
+        }
+
+        function toggleMute() {
+            const muteBtn = document.getElementById('mute-btn');
+            if(introVideo.muted) {
+                introVideo.muted = false;
+                muteBtn.innerText = "MUTE AUDIO";
+                muteBtn.style.color = "#ff0000";
+                muteBtn.style.borderColor = "#ff0000";
+            } else {
+                introVideo.muted = true;
+                muteBtn.innerText = "UNMUTE AUDIO";
+                muteBtn.style.color = "#888";
+                muteBtn.style.borderColor = "#888";
+            }
+        }
+
+        function skipToMenu() {
+            introVideo.pause();
+            introVideo.currentTime = 0;
+            document.getElementById('video-screen').style.display = 'none';
+            showMainMenu();
+        }
+
+        introVideo.onended = function() {
+            skipToMenu();
+        };
+
+        // --- FLASHCARD LOGIC ---
+        function stopVocabAudio() {
+            if (vocabAudio) {
+                vocabAudio.pause();
+                vocabAudio.currentTime = 0;
             }
         }
 
         function hideAll() { 
-            ['main-menu', 'flashcard-area', 'results-screen'].forEach(id => document.getElementById(id).style.display = 'none'); 
-            stopAudio(); 
+            ['landing-screen', 'video-screen', 'main-menu', 'flashcard-area', 'results-screen'].forEach(id => document.getElementById(id).style.display = 'none'); 
+            stopVocabAudio(); 
         }
 
-        function showMainMenu() { hideAll(); initMenu(); document.getElementById('main-menu').style.display = 'flex'; isActive = false; }
+        function showMainMenu() { 
+            hideAll(); 
+            initMenu(); 
+            document.getElementById('main-menu').style.display = 'flex'; 
+            isActive = false; 
+        }
 
         function startTraining(rankObj) {
             currentRank = rankObj; activeDeck = [...vocabularyData[rankObj.id]].sort(() => Math.random() - 0.5);
@@ -347,7 +495,6 @@
             
             updateHUD(); 
             displayCard();
-            // Start silent. Waiting for 'Enter'
         }
 
         function updateHUD() {
@@ -357,10 +504,10 @@
         }
 
         function displayCard() {
-            stopAudio();
+            stopVocabAudio();
             const defEl = document.getElementById('def-text');
             defEl.innerText = activeDeck[currentIndex].def;
-            defEl.style.visibility = "hidden"; // Entirely invisible to start
+            defEl.style.visibility = "hidden"; 
 
             document.getElementById('word-text').innerText = activeDeck[currentIndex].word;
             document.getElementById('word-text').style.visibility = 'hidden';
@@ -373,7 +520,7 @@
         }
 
         function playAudioOnly() {
-            stopAudio();
+            stopVocabAudio();
             const item = activeDeck[currentIndex];
             const safeWord = item.word.replace(/ /g, '_'); 
             const categoryFolder = currentRank.id;
@@ -381,13 +528,13 @@
             const repoBaseUrl = 'https://raw.githubusercontent.com/dogierez/esential-vocabulary-star-wars-with-audio/main/audio';
             const audioUrl = `${repoBaseUrl}/${categoryFolder}/${item.id}_Q_${safeWord}.wav`;
             
-            currentAudio = new Audio(audioUrl);
-            currentAudio.play().catch(e => console.log(e));
+            vocabAudio = new Audio(audioUrl);
+            vocabAudio.play().catch(e => console.log(e));
         }
 
         function flipCard() { 
             if (!isFlipped) { 
-                revealText(); // Safety check: show def if they skipped Space
+                revealText(); 
                 document.getElementById('word-text').style.visibility = 'visible'; 
                 isFlipped = true; 
             } 
@@ -400,7 +547,6 @@
             } else { 
                 updateHUD(); 
                 displayCard(); 
-                // Card is loaded. Silent. Waiting for Enter.
             }
         }
 
@@ -408,7 +554,7 @@
             isActive = false; hideAll();
             if (currentIndex >= activeDeck.length && !completedRanks.includes(currentRank.id)) {
                 completedRanks.push(currentRank.id);
-                localStorage.setItem('sw_handshake_final', JSON.stringify(completedRanks));
+                localStorage.setItem('sw_cinematic_v2', JSON.stringify(completedRanks));
             }
             let total = scoreCorrect + scoreFailed;
             document.getElementById('results-screen').style.display = 'flex';
@@ -423,12 +569,10 @@
             
             if (e.code === 'Enter') { 
                 e.preventDefault(); 
-                // Just play the audio. Leave text hidden.
                 playAudioOnly(); 
             }
             else if (e.code === 'Space') { 
                 e.preventDefault(); 
-                // Play audio AND reveal the text
                 playAudioOnly();
                 revealText(); 
             }
@@ -439,12 +583,11 @@
                 currentIndex--; const last = scoreHistory.pop();
                 if (last === 'correct') scoreCorrect--; if (last === 'failed') scoreFailed--;
                 updateHUD(); displayCard(); 
-                revealText(); // Reveal what was there
+                revealText(); 
                 document.getElementById('word-text').style.visibility = 'visible'; isFlipped = true;
             } else if (e.key === 'Escape') endExercise("Session Aborted");
         });
 
-        initMenu();
     </script>
 </body>
 </html>
